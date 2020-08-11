@@ -177,9 +177,6 @@ spec:
       tty: true
       command: ["/bin/bash"]
       workingDir: ${workingDir}
-      env:
-        - name: HOME
-          value: /home/devops
       envFrom:
         - configMapRef:
             name: sonarqube-config
@@ -214,17 +211,31 @@ spec:
                     npm run pact:verify --if-present
                 '''
             }
+        }
+        container(name: 'sonarqube-cli', shell: '/bin/bash') {
             stage('Sonar scan') {
                 sh '''#!/bin/bash
 
-                if [[ -z "${SONARQUBE_URL}" ]]; then
-                  echo "Skipping Sonar Qube step as Sonar Qube not installed or configured"
-                  exit 0
+                if ! command -v sonar-scanner &> /dev/null
+                then
+                    echo "Skipping SonarQube step, no task defined"
+                    exit 0
                 fi
 
-                npm run sonarqube:scan --if-present
+                if [ -n "${SONARQUBE_URL}" ]; then
+
+                  sonar-scanner \
+                    -Dsonar.login=${SONARQUBE_USER} \
+                    -Dsonar.password=${SONARQUBE_PASSWORD} \
+                    -Dsonar.host.url=${SONARQUBE_URL} 
+
+                else 
+                    echo "Skipping Sonar Qube step"
+                fi
                 '''
             }
+        }
+        container(name: 'node', shell: '/bin/bash') {
             stage('Tag release') {
                 sh '''#!/bin/bash
                     set -x
