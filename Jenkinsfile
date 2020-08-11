@@ -172,6 +172,22 @@ spec:
         - secretRef:
             name: git-credentials
             optional: true
+    - name: sonarqube-cli
+      image: docker.io/sonarsource/sonar-scanner-cli:4.4
+      tty: true
+      command: ["/bin/bash"]
+      workingDir: ${workingDir}
+      env:
+        - name: HOME
+          value: /home/devops
+      envFrom:
+        - configMapRef:
+            name: sonarqube-config
+            optional: true
+        - secretRef:
+            name: sonarqube-access
+            optional: true
+
 """
 ) {
     node(buildLabel) {
