@@ -61,12 +61,6 @@ spec:
         - configMapRef:
             name: pactbroker-config
             optional: true
-        - configMapRef:
-            name: sonarqube-config
-            optional: true
-        - secretRef:
-            name: sonarqube-access
-            optional: true
       env:
         - name: HOME
           value: ${workingDir}
